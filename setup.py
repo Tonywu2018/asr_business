@@ -13,7 +13,7 @@ setup(
     readme="README.md",
     python_requires=">=3.8",
     license="MIT Licence",
-    # url="https://github.com/wshzd/NLP/new/master/pip_package/two_num_sum",
+    url="https://github.com/Tonywu2018/asr_business",
     author="wuwenxiao",
     author_email="wuwenxiao@inke.cn",
     packages=find_packages(),
