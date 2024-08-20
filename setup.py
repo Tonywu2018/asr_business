@@ -20,9 +20,10 @@ setup(
     include_package_data=True,
     platforms="any",
     install_requires=[
-        str(r)
-        for r in pkg_resources.parse_requirements(
-            Path(__file__).with_name("requirements.txt").open()
-        )
+            "torch<=2.3",
+            "funasr",
+            "noisereduce",
+            "pydub",
+            "soundfile"
     ]
 )
