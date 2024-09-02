@@ -57,14 +57,14 @@ class ASR:
         :return:
         """
         text = item['text']
-        id = item['id']
+        key = item['key']
         converted_text = c2d.takeNumberFromString(text)['replacedText']
         converted_text = list(converted_text)
         for i in range(len(converted_text)):
             if converted_text[i] == "1" and converted_text[i + 1] not in digit_num:
                 converted_text[i] = "一"
         converted_text = "".join(converted_text)
-        return {'id': id, 'text': converted_text}
+        return {'key': key, 'text': converted_text}
 
     def transcribe(self):
         """
