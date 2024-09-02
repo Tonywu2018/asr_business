@@ -88,7 +88,7 @@ class ASR:
                 merge_vad=True,
                 merge_length_s=10
             )
-            res = map(self.convert_chinese_to_digits, res)
+            res = list(map(self.convert_chinese_to_digits, res))
             res_ls.append(res)
         else:
             batch = [self.audio[i:i + self.batch_size] for i in range(0, len(self.audio), self.batch_size)]
@@ -101,6 +101,6 @@ class ASR:
                     merge_length_s=10
                 )
                 # todo: 判断res结果中是否所有的text均包含文本，如果text为空，调用声纹识别模型，进行识别并返回对应结果
-                res = map(self.convert_chinese_to_digits, res)
+                res = list(map(self.convert_chinese_to_digits, res))
                 res_ls.append(res)
         return res_ls
