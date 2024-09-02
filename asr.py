@@ -1,4 +1,13 @@
+import os
+import sys
+
 from funasr import AutoModel
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
+import chinese2digits as c2d
+
+digit_num = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 
 class ASR:
@@ -34,13 +43,28 @@ class ASR:
         """
         对语音进行增强
         """
-        pass
 
     def audio_denoise(self, audio):
         """
         对于语音进行降噪
         """
         pass
+
+    def convert_chinese_to_digits(self, item):
+        """
+        将文本中的 中文数字 转化为 阿拉伯数字
+        :param item:
+        :return:
+        """
+        text = item['text']
+        id = item['id']
+        converted_text = c2d.takeNumberFromString(text)['replacedText']
+        converted_text = list(converted_text)
+        for i in range(len(converted_text)):
+            if converted_text[i] == "1" and converted_text[i + 1] not in digit_num:
+                converted_text[i] = "一"
+        converted_text = "".join(converted_text)
+        return {'id': id, 'text': converted_text}
 
     def transcribe(self):
         """
@@ -64,6 +88,7 @@ class ASR:
                 merge_vad=True,
                 merge_length_s=10
             )
+            res = map(self.convert_chinese_to_digits, res)
             res_ls.append(res)
         else:
             batch = [self.audio[i:i + self.batch_size] for i in range(0, len(self.audio), self.batch_size)]
@@ -76,5 +101,6 @@ class ASR:
                     merge_length_s=10
                 )
                 # todo: 判断res结果中是否所有的text均包含文本，如果text为空，调用声纹识别模型，进行识别并返回对应结果
+                res = map(self.convert_chinese_to_digits, res)
                 res_ls.append(res)
         return res_ls
