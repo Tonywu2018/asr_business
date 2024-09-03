@@ -5,8 +5,8 @@
 # @File    : chinese2digit.py
 # @Software: PyCharm
 # @Description: 将文本中的 中文数字 转化为 阿拉伯数字
-from decimal import Decimal
 import re
+from decimal import Decimal
 
 CHINESE_CHAR_LIST = ['幺', '零', '一', '二', '两', '三', '四', '五', '六', '七', '八', '九', '十', '百', '千', '万', '亿']
 CHINESE_SIGN_LIST = ['负', '正', '-', '+']
