@@ -6,7 +6,7 @@ import pkg_resources
 setup(
     name="asr_business",
     py_modules=["asr"],
-    version="v0.1.2",
+    version="v0.1.3",
     describe="ASR Python package for identifying business audio data",
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
