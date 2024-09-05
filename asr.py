@@ -15,25 +15,22 @@ digit_num = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 class ASR:
     def __init__(self,
-                 audio,
                  model_path,
                  vad_model_path="",
                  punc_model_path="",
-                 batch_size=1,
+                 batch_size=40,
                  is_enhance_audio=False,
                  is_denoise_audio=False,
                  device="cuda:0"):
         """
-        audio: 要进行识别的音频，格式为list列表
         model_path: asr主模型文件路径
         vad_model_path: 端点检测模型文件路径，可选参数
         punc_model_path: 标点模型文件路径，可以预测文本中的标点
-        batch_size: 单次识别的数量，默认为1，即一次识别一条音频
+        batch_size: 单次识别的数量，默认为20
         is_enhance_audio: 是否进行语音增强，默认为False
         is_denoise_audio: 是否进行语音降噪，默认为False
         device: 模型推理的设备，默认为cuda:0
         """
-        self.audio = audio
         self.model_path = model_path
         self.vad_model_path = vad_model_path
         self.punc_model_path = punc_model_path
@@ -41,28 +38,22 @@ class ASR:
         self.is_enhance_audio = is_enhance_audio
         self.is_denoise_audio = is_denoise_audio
         self.device = device
-        if self.batch_size == 1:
-            # vad model只支持单条推理
-            self.model = AutoModel(
-                model=self.model_path,
-                trust_remote_code=True,
-                vad_model=self.vad_model_path if self.vad_model_path != "" else None,
-                vad_kwargs={"max_single_segment_time": 10000} if self.vad_model_path != "" else {},
-                punc_model=self.punc_model_path if self.punc_model_path != "" else None,
-                device=self.device,
-            )
-        else:
-            self.model = AutoModel(
-                model=self.model_path,
-                trust_remote_code=True,
-                device=self.device,
-            )
-        self.punc_model = AutoModel(model=self.punc_model_path)
+        self.model = AutoModel(
+            model=self.model_path,
+            device=self.device,
+            disable_update=True
+        )
+        self.punc_model = AutoModel(
+            model=self.punc_model_path,
+            device=self.device,
+            disable_update=True
+        )
 
     def audio_enhance(self, audio):
         """
         对语音进行增强
         """
+        pass
 
     def audio_denoise(self, audio):
         """
@@ -111,7 +102,7 @@ class ASR:
                 input=input_files,
                 language="zh",
                 use_itn=True,
-                batch_size=self.batch_size
+                batch_size=len(input_files) if self.batch_size > len(input_files) else self.batch_size
             )
             res = list(map(self.add_punctuation, res))
             res = list(map(self.convert_chinese_to_digits, res))
@@ -121,41 +112,30 @@ class ASR:
                 input=input_files,
                 language="zh",
                 use_itn=True,
-                batch_size=self.batch_size
+                batch_size=len(input_files) if self.batch_size > len(input_files) else self.batch_size
             )
             # todo: 判断res结果中是否所有的text均包含文本，如果text为空，调用声纹识别模型，进行识别并返回对应结果
             res = list(map(self.convert_chinese_to_digits, res))
             return res
 
-    def transcribe(self):
+    def transcribe(self, audio):
         """
-        对语音进行转录
+        将音频识别为文本
+        :param audio: 音频文件，格式为列表
+        :return:
         """
-
         res_ls = []
-        # 设置batch size
         try:
-            # vad model只有在batch size为1时才能使用
-            if self.batch_size == 1:
-                res = self.model.generate(
-                    input=self.audio,
-                    language="zh",
-                    use_itn=True,
-                    merge_vad=True,
-                    merge_length_s=10
-                )
+            # 当batch size大于音频列表的长度时，将整个音频列表喂入模型
+            if self.batch_size >= len(audio):
+                res = self.generate(audio)
                 res_ls.append(res)
-            # batch size大于1时，不能使用vad model
+            # 当batch size小于音频列表长度时，以batch size为step，将音频列表进行切割，分批次喂入模型
             else:
-                if self.batch_size >= len(self.audio):
-                    res = self.generate(self.audio)
+                batch = [audio[i:i + self.batch_size] for i in range(0, len(audio), self.batch_size)]
+                for input_files in batch:
+                    res = self.generate(input_files)
                     res_ls.append(res)
-                else:
-                    batch = [self.audio[i:i + self.batch_size] for i in range(0, len(self.audio), self.batch_size)]
-                    for input_files in batch:
-                        res = self.generate(input_files)
-                        res_ls.append(res)
         except Exception as e:
             print(str(e))
         return res_ls
-
