@@ -86,7 +86,7 @@ class ASR:
         text = item['text']
         key = item['key']
         if text:
-            punc_text = self.punc_model.generate(input=text)[0]['text']
+            punc_text = self.punc_model.generate(input=text,disable_pbar=True)[0]['text']
         else:
             punc_text = ""
         return {"key": key, "text": punc_text}
@@ -102,7 +102,8 @@ class ASR:
                 input=input_files,
                 language="zh",
                 use_itn=True,
-                batch_size=len(input_files) if self.batch_size > len(input_files) else self.batch_size
+                batch_size=len(input_files) if self.batch_size > len(input_files) else self.batch_size,
+                disable_pbar=True
             )
             res = list(map(self.add_punctuation, res))
             res = list(map(self.convert_chinese_to_digits, res))
@@ -112,7 +113,8 @@ class ASR:
                 input=input_files,
                 language="zh",
                 use_itn=True,
-                batch_size=len(input_files) if self.batch_size > len(input_files) else self.batch_size
+                batch_size=len(input_files) if self.batch_size > len(input_files) else self.batch_size,
+                disable_pbar=True
             )
             # todo: 判断res结果中是否所有的text均包含文本，如果text为空，调用声纹识别模型，进行识别并返回对应结果
             res = list(map(self.convert_chinese_to_digits, res))
