@@ -6,7 +6,7 @@ import pkg_resources
 setup(
     name="asr_business",
     py_modules=["asr"],
-    version="v0.1.4",
+    version="v0.1.5",
     describe="ASR Python package for identifying business audio data",
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
@@ -21,9 +21,14 @@ setup(
     platforms="any",
     install_requires=[
             "torch<=2.3",
-            "funasr",
+            "funasr==1.1.8",
             "noisereduce",
             "pydub",
             "soundfile"
+    ],
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
     ]
 )

@@ -120,21 +120,25 @@ class ASR:
             res = list(map(self.convert_chinese_to_digits, res))
             return res
 
-    def transcribe(self, audio):
+    def transcribe(self, audios):
         """
         将音频识别为文本
         :param audio: 音频文件，格式为列表
         :return:
         """
         res_ls = []
+        # 判断音频文件格式是否为.wav
+        for audio in audios:
+            assert audio.endswith('.wav'), "音频文件格式错误，目前仅支持.wav文件，当前文件的为: {}".format(audio)
+
         try:
             # 当batch size大于音频列表的长度时，将整个音频列表喂入模型
-            if self.batch_size >= len(audio):
-                res = self.generate(audio)
+            if self.batch_size >= len(audios):
+                res = self.generate(audios)
                 res_ls.append(res)
             # 当batch size小于音频列表长度时，以batch size为step，将音频列表进行切割，分批次喂入模型
             else:
-                batch = [audio[i:i + self.batch_size] for i in range(0, len(audio), self.batch_size)]
+                batch = [audios[i:i + self.batch_size] for i in range(0, len(audios), self.batch_size)]
                 for input_files in batch:
                     res = self.generate(input_files)
                     res_ls.append(res)
